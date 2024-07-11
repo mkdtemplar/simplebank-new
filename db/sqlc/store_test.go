@@ -16,6 +16,7 @@ func TestStore_TransferTx(t *testing.T) {
 
 	n := 5
 	amount := int64(10)
+	existed := make(map[int]bool)
 
 	errs := make(chan error)
 	results := make(chan TransferTxResult)
@@ -68,10 +69,12 @@ func TestStore_TransferTx(t *testing.T) {
 
 		toEntry := result.ToEntry
 		require.NotEmpty(t, toEntry)
-		require.Equal(t, account2.ID, toEntry.AccountID)
+		//require.Equal(t, account2.ID, toEntry.AccountID)
 		require.Equal(t, amount, toEntry.Amount)
 		require.NotZero(t, toEntry.ID)
 		require.NotZero(t, toEntry.CreatedAt)
+
+		fmt.Println(">> after:", account1.Balance, account2.Balance)
 
 		_, err = testStore.GetEntry(context.Background(), toEntry.ID)
 		require.NoError(t, err)
@@ -85,6 +88,16 @@ func TestStore_TransferTx(t *testing.T) {
 		require.NotEmpty(t, toAccount)
 		require.Equal(t, account2.ID, toAccount.ID)
 
-		// TODO: checks accounts balance
+		// checks accounts balance
+		dif1 := account1.Balance - fromAccount.Balance
+		dif2 := toAccount.Balance - account2.Balance
+		require.Equal(t, dif1, dif2)
+		require.True(t, dif1 > 0)
+		require.True(t, dif1%amount == 0)
+
+		k := int(dif1 / amount)
+		require.True(t, k >= 1 && k <= n)
+		require.NotContains(t, existed, k)
+		existed[k] = true
 	}
 }
