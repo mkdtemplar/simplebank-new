@@ -19,4 +19,7 @@ migratedown:
 test:
 	go test -v -cover ./...
 
-.PHONY: postgres createdb createtestdb dropdb migrateup migratedown migratecreate test
+mockdb:
+	mockgen -package mockdb -destination db/mock/store.go github.com/mkdtemplar/simplebank-new/db/sqlc Store
+
+.PHONY: postgres createdb createtestdb dropdb migrateup migratedown migratecreate test mockdb
