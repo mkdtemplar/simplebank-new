@@ -3,6 +3,8 @@ package api
 import (
 	"database/sql"
 	"errors"
+	"github.com/lib/pq"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -32,6 +34,11 @@ func (s *Server) createAccount(ctx *gin.Context) {
 	}
 	account, err := s.store.CreateAccount(ctx, arg)
 	if err != nil {
+		var pqErr *pq.Error
+		ok := errors.As(err, &pqErr)
+		if !ok {
+			log.Panicln(pqErr.Code.Name())
+		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
