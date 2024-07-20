@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"errors"
 	"github.com/lib/pq"
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -34,10 +33,12 @@ func (s *Server) createAccount(ctx *gin.Context) {
 	}
 	account, err := s.store.CreateAccount(ctx, arg)
 	if err != nil {
-		var pqErr *pq.Error
-		ok := errors.As(err, &pqErr)
-		if !ok {
-			log.Panicln(pqErr.Code.Name())
+		if pqErr, ok := err.(*pq.Error); ok {
+			switch pqErr.Code.Name() {
+			case "foreign_key_violation", "unique_violation":
+				ctx.JSON(http.StatusForbidden, errorResponse(err))
+				return
+			}
 		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
