@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"github.com/lib/pq"
+	"github.com/mkdtemplar/simplebank-new/token"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -15,7 +16,6 @@ func errorResponse(err error) gin.H {
 }
 
 type createAccountRequest struct {
-	Owner    string `json:"owner" binding:"required"`
 	Currency string `json:"currency" binding:"required,currency"`
 }
 
@@ -26,8 +26,10 @@ func (s *Server) createAccount(ctx *gin.Context) {
 		return
 	}
 
+	authPlayLoad := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+
 	arg := db.CreateAccountParams{
-		Owner:    req.Owner,
+		Owner:    authPlayLoad.Username,
 		Balance:  0,
 		Currency: req.Currency,
 	}
@@ -66,6 +68,14 @@ func (s *Server) getAccount(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
+
+	authPlayLoad := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+	if account.Owner != authPlayLoad.Username {
+		err = errors.New("not authorized to access this account")
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		return
+	}
+
 	ctx.JSON(http.StatusOK, account)
 }
 
@@ -81,7 +91,9 @@ func (s *Server) listAccount(ctx *gin.Context) {
 		return
 	}
 
+	authPlayLoad := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
 	arg := db.ListAccountParams{
+		Owner:  authPlayLoad.Username,
 		Limit:  req.PageSize,
 		Offset: (req.PageID - 1) * req.PageSize,
 	}
