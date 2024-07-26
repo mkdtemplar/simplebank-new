@@ -1,5 +1,5 @@
 postgres:
-	docker run --name simplebank-new --network bank-network -p 5432:5432  -e POSTGRES_USER=postgres  -e POSTGRES_PASSWORD=postgres -d postgres:latest
+	docker run --name simplebank-new  -p 5432:5432  -e POSTGRES_USER=postgres  -e POSTGRES_PASSWORD=postgres -d postgres:latest
 
 createdb:
 	docker exec -it simplebank-new createdb --username=postgres --owner=postgres simplebankdata
