@@ -22,4 +22,13 @@ test:
 mockdb:
 	mockgen -package mockdb -destination db/mock/store.go github.com/mkdtemplar/simplebank-new/db/sqlc Store
 
-.PHONY: postgres createdb createtestdb dropdb migrateup migratedown migratecreate test mockdb
+proto:
+	rm -f pb/*.go
+	protoc  --proto_path=proto --go_out=pb --go_opt=paths=source_relative \
+    --go-grpc_out=pb --go-grpc_opt=paths=source_relative \
+    proto/*.proto
+
+evans:
+	evans --host localhost --port 9090 -r repl
+
+.PHONY: postgres createdb createtestdb dropdb migrateup migratedown migratecreate test mockdb proto evans
