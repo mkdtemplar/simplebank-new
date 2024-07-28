@@ -1,10 +1,13 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"log"
 	"net"
+	"net/http"
 
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	_ "github.com/lib/pq"
 	"github.com/mkdtemplar/simplebank-new/api"
 	db "github.com/mkdtemplar/simplebank-new/db/sqlc"
@@ -26,6 +29,7 @@ func main() {
 	}
 
 	store := db.NewStore(conn)
+	go runGatewayServer(config, store)
 	runGrpcServer(config, store)
 
 }
@@ -63,4 +67,33 @@ func runGinServer(config util.Config, store db.Store) {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func runGatewayServer(config util.Config, store db.Store) {
+	server, err := gapi.NewServer(config, store)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	grpcMux := runtime.NewServeMux()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	err = pb.RegisterSimpleBankHandlerServer(ctx, grpcMux, server)
+	if err!= nil {
+        log.Fatal(err)
+    }
+
+	mux := http.NewServeMux()
+	mux.Handle("/", grpcMux)
+
+	listener, err := net.Listen("tcp", config.HTTPServerAddress)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Printf("HTTP gateway server is listening on %s\n", listener.Addr().String())
+	err = http.Serve(listener, mux)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 }

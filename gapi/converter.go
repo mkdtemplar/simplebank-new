@@ -8,10 +8,10 @@ import (
 
 func convertUser(user db.User) *pb.User {
 	return &pb.User{
-        Username: user.Username,
-        FullName: user.FullName,
-        Email:    user.Email,
+		Username:          user.Username,
+		FullName:          user.FullName,
+		Email:             user.Email,
 		PasswordChangetAt: timestamppb.New(user.PasswordChangetAt),
-		CreatedAt: timestamppb.New(user.CreatedAt),
+		CreatedAt:         timestamppb.New(user.CreatedAt),
 	}
 }
