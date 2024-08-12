@@ -11,7 +11,7 @@ func convertUser(user db.User) *pb.User {
 		Username:          user.Username,
 		FullName:          user.FullName,
 		Email:             user.Email,
-		PasswordChangetAt: timestamppb.New(user.PasswordChangetAt),
+		PasswordChangedAt: timestamppb.New(user.PasswordChangetAt),
 		CreatedAt:         timestamppb.New(user.CreatedAt),
 	}
 }
