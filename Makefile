@@ -23,11 +23,11 @@ mockdb:
 	mockgen -package mockdb -destination db/mock/store.go github.com/mkdtemplar/simplebank-new/db/sqlc Store
 
 proto:
-	rm -f pb/*.go
+	rm -f pb/*.go \
 	protoc --proto_path=proto --go_out=pb --go_opt=paths=source_relative \
 	--go-grpc_out=pb --go-grpc_opt=paths=source_relative \
 	--grpc-gateway_out=pb --grpc-gateway_opt=paths=source_relative \
-	--openapiv2_out=db/doc/swagger \
+	--openapiv2_out=doc/swagger \
 	proto/*.proto
 
 evans:
