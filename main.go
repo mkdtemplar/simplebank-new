@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"log"
 	"net"
 	"net/http"
@@ -20,6 +21,10 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/protobuf/encoding/protojson"
+
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
 func main() {
@@ -31,6 +36,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	runDbMigrations(config.MigrationURL, config.DBSource)
 
 	store := db.NewStore(conn)
 	go runGatewayServer(config, store)
@@ -117,5 +124,19 @@ func runGatewayServer(config util.Config, store db.Store) {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+}
+
+func runDbMigrations(migrationURL string, dbSource string) {
+	migrations, err := migrate.New(migrationURL, dbSource)
+	if err != nil {
+		log.Fatalf("failed to create migration instance %s", err.Error())
+	}
+
+	if err = migrations.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
+		log.Fatalf("failed to  run migrate up %s", err.Error())
+	}
+
+	log.Println("migrate up successfully")
 
 }
