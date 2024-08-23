@@ -37,7 +37,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	runDbMigrations(config.MigrationURL, config.DBSource)
+	//runDbMigrations(config.MigrationURL, config.DBSource)
 
 	store := db.NewStore(conn)
 	go runGatewayServer(config, store)

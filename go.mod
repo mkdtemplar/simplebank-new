@@ -1,6 +1,6 @@
 module github.com/mkdtemplar/simplebank-new
 
-go 1.22
+go 1.23
 
 require (
 	github.com/gin-gonic/gin v1.10.0
@@ -21,11 +21,8 @@ require (
 )
 
 require (
-	github.com/google/go-github/v39 v39.2.0 // indirect
-	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
-	golang.org/x/oauth2 v0.21.0 // indirect
 )
 
 require (
