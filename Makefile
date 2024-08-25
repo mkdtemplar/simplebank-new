@@ -36,4 +36,7 @@ proto:
 evans:
 	evans --host localhost --port 9090 -r repl
 
-.PHONY: postgres createdb createtestdb dropdb migrateup migratedown migratecreate test mockdb proto evans
+redis:
+	docker run --name redis -p 6379:6379 redis:latest
+
+.PHONY: postgres createdb createtestdb dropdb migrateup migratedown migratecreate test mockdb proto evans redis

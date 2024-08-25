@@ -34,24 +34,24 @@ func (r RedisTaskDistributor) DistributeTaskVerifyEmail(ctx context.Context, pay
 	return nil
 }
 
-// ProccessTaskVerifyEmail implements TaskProccessor.
-func (proccessor *RedisTaskProccessor) ProccessTaskVerifyEmail(ctx context.Context, task *asynq.Task) error {
+// ProccessTaskVerifyEmail implements TaskProcessor.
+func (processor *RedisTaskProcessor) ProcessTaskVerifyEmail(ctx context.Context, task *asynq.Task) error {
 	var payload PayloadSendVerifyEmail
 
 	if err := json.Unmarshal(task.Payload(), &payload); err != nil {
 		return fmt.Errorf("failed to decode payload: %w", asynq.SkipRetry)
 	}
 
-	user, err := proccessor.store.GetUser(ctx, payload.Username)
+	user, err := processor.store.GetUser(ctx, payload.Username)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return fmt.Errorf("user not found: %w", asynq.SkipRetry)
 		}
-        return fmt.Errorf("failed to get user: %w", err)
-    }
+		return fmt.Errorf("failed to get user: %w", err)
+	}
 
 	//TODO: send email to user
-	
+
 	log.Info().Str("type", task.Type()).Bytes("payload", task.Payload()).Str("email", user.Email).Msg("processed task")
 
 	return nil
