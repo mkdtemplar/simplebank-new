@@ -17,7 +17,7 @@ migratedown:
 	migrate -path db/migration -database "postgresql://postgres:postgres@$5432:5432/simplebankdata?sslmode=disable" -verbose down
 
 test:
-	go test -v -cover ./...
+	go test -v -cover -short ./...
 
 mockdb:
 	mockgen -package mockdb -destination db/mock/store.go github.com/mkdtemplar/simplebank-new/db/sqlc Store

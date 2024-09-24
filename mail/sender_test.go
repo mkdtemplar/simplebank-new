@@ -1,39 +1,26 @@
 package mail
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/mkdtemplar/simplebank-new/util"
+	"github.com/stretchr/testify/require"
+)
 
 func TestGmailSender_SendEmail(t *testing.T) {
-	type fields struct {
-		name              string
-		fromEmailAddress  string
-		fromEmailPassword string
+	if testing.Short() {
+		t.Skip()
 	}
-	type args struct {
-		subject     string
-		content     string
-		to          []string
-		cc          []string
-		bcc         []string
-		attachFiles []string
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			sender := &GmailSender{
-				name:              tt.fields.name,
-				fromEmailAddress:  tt.fields.fromEmailAddress,
-				fromEmailPassword: tt.fields.fromEmailPassword,
-			}
-			if err := sender.SendEmail(tt.args.subject, tt.args.content, tt.args.to, tt.args.cc, tt.args.bcc, tt.args.attachFiles); (err != nil) != tt.wantErr {
-				t.Errorf("GmailSender.SendEmail() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
+	config, err := util.LoadConfig("..")
+	require.NoError(t, err)
+
+	sender := NewGmailSender(config.EmailSenderName, config.EmailSenderAddress, config.EmailSenderPassword)
+
+	subject := "Test email"
+	content := `<h1>This is the test email for simplebank</h1>`
+	to := []string{"sagitariusim@live.com"}
+	attachFiles := []string{"../README.MD"}
+
+	err = sender.SendEmail(subject, content, to, nil, nil, attachFiles)
+	require.NoError(t, err)
 }
