@@ -2,7 +2,6 @@ package gapi
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 
@@ -33,7 +32,7 @@ func (s *Server) LoginUser(ctx context.Context, req *pb.LoginUserRequest) (*pb.L
 	}
 	user, err := s.store.GetUser(ctx, req.GetUsername())
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if errors.Is(err, db.ErrRecordNotFound) {
 			return nil, fmt.Errorf(codes.NotFound.String(), "user not found %v", req.GetUsername())
 		}
 		return nil, fmt.Errorf(codes.Internal.String(), "server error %v", err)

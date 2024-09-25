@@ -55,3 +55,14 @@ func ValidateFullName(value string) error {
 	}
 	return nil
 }
+
+func VerifyEmailId(value int64) error {
+	if value <= 0 {
+		return fmt.Errorf("id must be positive integer")
+	}
+	return nil
+}
+
+func ValidateSecretCode(value string) error {
+	return ValidateString(value, 32, 128)
+}

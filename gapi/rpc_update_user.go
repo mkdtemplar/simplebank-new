@@ -2,11 +2,11 @@ package gapi
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgtype"
 	db "github.com/mkdtemplar/simplebank-new/db/sqlc"
 	"github.com/mkdtemplar/simplebank-new/pb"
 	"github.com/mkdtemplar/simplebank-new/util"
@@ -36,8 +36,8 @@ func (s *Server) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest) (*pb
 
 	arg := db.UpdateUserParams{
 		Username: req.GetUsername(),
-		FullName: sql.NullString{String: req.GetFullName(), Valid: req.FullName != nil},
-		Email:    sql.NullString{String: req.GetEmail(), Valid: req.Email != nil},
+		FullName: pgtype.Text{String: req.GetFullName(), Valid: req.FullName != nil},
+		Email:    pgtype.Text{String: req.GetEmail(), Valid: req.Email != nil},
 	}
 
 	if req.Password != nil {
@@ -47,18 +47,18 @@ func (s *Server) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest) (*pb
 		}
 	}
 
-	arg.HashedPassword = sql.NullString{
+	arg.HashedPassword = pgtype.Text{
 		String: hashedPassword,
 	}
 
-	arg.PasswordChangetAt = sql.NullTime{
+	arg.PasswordChangetAt = pgtype.Timestamptz{
 		Time:  time.Now(),
 		Valid: true,
 	}
 
 	user, err := s.store.UpdateUser(ctx, arg)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if errors.Is(err, db.ErrRecordNotFound) {
 			return nil, status.Error(codes.NotFound, "user not found")
 		}
 		return nil, fmt.Errorf(codes.Internal.String(), "failed to update user %v", err)

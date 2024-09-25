@@ -1,11 +1,11 @@
 package api
 
 import (
-	"database/sql"
 	"errors"
+	"net/http"
+
 	"github.com/lib/pq"
 	"github.com/mkdtemplar/simplebank-new/token"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 	db "github.com/mkdtemplar/simplebank-new/db/sqlc"
@@ -61,7 +61,7 @@ func (s *Server) getAccount(ctx *gin.Context) {
 
 	account, err := s.store.GetAccount(ctx, req.ID)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if errors.Is(err, db.ErrRecordNotFound) {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
 			return
 		}

@@ -22,6 +22,9 @@ test:
 mockdb:
 	mockgen -package mockdb -destination db/mock/store.go github.com/mkdtemplar/simplebank-new/db/sqlc Store
 
+new_migration:
+	migrate create -ext sql -dir db/migrations/ -seq $(name)
+
 proto:
 	rm -f pb/*.go
 	rm -f doc/swagger/*.swagger.json
@@ -39,4 +42,4 @@ evans:
 redis:
 	docker run --name redis -p 6379:6379 redis:latest
 
-.PHONY: postgres createdb createtestdb dropdb migrateup migratedown migratecreate test mockdb proto evans redis
+.PHONY: postgres createdb createtestdb dropdb migrateup migratedown migratecreate test mockdb proto evans redis new_migration

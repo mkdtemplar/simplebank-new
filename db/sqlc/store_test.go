@@ -9,7 +9,6 @@ import (
 )
 
 func TestStore_TransferTx(t *testing.T) {
-	testStore := NewStore(testDb)
 	account1 := createRandomAccount(t)
 	account2 := createRandomAccount(t)
 	fmt.Println(">> before:", account1.Balance, account1.ID, account2.Balance, account2.ID)
@@ -116,7 +115,6 @@ func TestStore_TransferTx(t *testing.T) {
 }
 
 func TestTransferTxDeadlock(t *testing.T) {
-	testStore := NewStore(testDb)
 	account1 := createRandomAccount(t)
 	account2 := createRandomAccount(t)
 	fmt.Println(">> before:", account1.Balance, account2.Balance)

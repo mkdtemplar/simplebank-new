@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"database/sql"
 	"testing"
 
 	"github.com/mkdtemplar/simplebank-new/util"
@@ -17,7 +16,7 @@ func createRandomAccount(t *testing.T) Account {
 		Currency: util.RandomCurrency(),
 	}
 
-	account, err := testQueries.CreateAccount(context.Background(), arg)
+	account, err := testStore.CreateAccount(context.Background(), arg)
 	require.NoError(t, err)
 	require.NotEmpty(t, account)
 	require.Equal(t, arg.Owner, account.Owner)
@@ -36,7 +35,7 @@ func TestQueries_CreateAccount(t *testing.T) {
 
 func TestQueries_GetAccount(t *testing.T) {
 	account1 := createRandomAccount(t)
-	account2, err := testQueries.GetAccount(context.Background(), account1.ID)
+	account2, err := testStore.GetAccount(context.Background(), account1.ID)
 	require.NoError(t, err)
 	require.NotEmpty(t, account2)
 	require.Equal(t, account1.Owner, account2.Owner)
@@ -53,7 +52,7 @@ func TestQueries_UpdateAccount(t *testing.T) {
 		Balance: util.RandomMoney(),
 	}
 
-	account2, err := testQueries.UpdateAccount(context.Background(), arg)
+	account2, err := testStore.UpdateAccount(context.Background(), arg)
 	require.NoError(t, err)
 	require.NotEmpty(t, account2)
 
@@ -65,11 +64,11 @@ func TestQueries_UpdateAccount(t *testing.T) {
 
 func TestQueries_DeleteAccount(t *testing.T) {
 	account1 := createRandomAccount(t)
-	err := testQueries.DeleteAccount(context.Background(), account1.ID)
+	err := testStore.DeleteAccount(context.Background(), account1.ID)
 	require.NoError(t, err)
-	account2, err := testQueries.GetAccount(context.Background(), account1.ID)
+	account2, err := testStore.GetAccount(context.Background(), account1.ID)
 	require.Error(t, err)
-	require.EqualError(t, err, sql.ErrNoRows.Error())
+	require.EqualError(t, err, ErrRecordNotFound.Error())
 	require.Empty(t, account2)
 }
 
@@ -84,7 +83,7 @@ func TestQueries_ListAccount(t *testing.T) {
 		Limit:  5,
 		Offset: 0,
 	}
-	accounts, err := testQueries.ListAccount(context.Background(), arg)
+	accounts, err := testStore.ListAccount(context.Background(), arg)
 	require.NoError(t, err)
 	require.NotEmpty(t, accounts)
 
