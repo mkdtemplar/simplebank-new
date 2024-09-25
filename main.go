@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"errors"
 	"net"
 	"net/http"
 	"os"
@@ -26,10 +25,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/protobuf/encoding/protojson"
-
-	"github.com/golang-migrate/migrate/v4"
-	_ "github.com/golang-migrate/migrate/v4/database/postgres"
-	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
 func main() {
@@ -150,19 +145,19 @@ func runGatewayServer(config util.Config, store db.Store, taskDistributor worker
 
 }
 
-func runDbMigrations(migrationURL string, dbSource string) {
-	migrations, err := migrate.New(migrationURL, dbSource)
-	if err != nil {
-		log.Fatal().Msg(err.Error())
-	}
+// func runDbMigrations(migrationURL string, dbSource string) {
+// 	migrations, err := migrate.New(migrationURL, dbSource)
+// 	if err != nil {
+// 		log.Fatal().Msg(err.Error())
+// 	}
 
-	if err = migrations.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
-		log.Fatal().Msg(err.Error())
-	}
+// 	if err = migrations.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
+// 		log.Fatal().Msg(err.Error())
+// 	}
 
-	log.Print("migrate up successfully")
+// 	log.Print("migrate up successfully")
 
-}
+// }
 
 func runTaskProcessor(config util.Config, redisOpt asynq.RedisClientOpt, store db.Store) {
 	mailer := mail.NewGmailSender(config.EmailSenderName, config.EmailSenderAddress, config.EmailSenderPassword)

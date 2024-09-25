@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/jackc/pgx/v5/pgxpool"
-	_ "github.com/lib/pq"
 	"github.com/mkdtemplar/simplebank-new/util"
 )
 
