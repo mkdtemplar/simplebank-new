@@ -12,7 +12,7 @@ import (
 )
 
 const createUser = `-- name: CreateUser :one
-INSERT INTO users (username, hashed_password, full_name, email) VALUES ($1, $2, $3, $4) RETURNING username, hashed_password, full_name, email, password_changet_at, created_at, is_email_verified
+INSERT INTO users (username, hashed_password, full_name, email) VALUES ($1, $2, $3, $4) RETURNING username, role, hashed_password, full_name, email, is_email_verified, password_changet_at, created_at
 `
 
 type CreateUserParams struct {
@@ -32,18 +32,19 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 	var i User
 	err := row.Scan(
 		&i.Username,
+		&i.Role,
 		&i.HashedPassword,
 		&i.FullName,
 		&i.Email,
+		&i.IsEmailVerified,
 		&i.PasswordChangetAt,
 		&i.CreatedAt,
-		&i.IsEmailVerified,
 	)
 	return i, err
 }
 
 const getUser = `-- name: GetUser :one
-SELECT username, hashed_password, full_name, email, password_changet_at, created_at, is_email_verified FROM users WHERE username = $1 LIMIT 1
+SELECT username, role, hashed_password, full_name, email, is_email_verified, password_changet_at, created_at FROM users WHERE username = $1 LIMIT 1
 `
 
 func (q *Queries) GetUser(ctx context.Context, username string) (User, error) {
@@ -51,12 +52,13 @@ func (q *Queries) GetUser(ctx context.Context, username string) (User, error) {
 	var i User
 	err := row.Scan(
 		&i.Username,
+		&i.Role,
 		&i.HashedPassword,
 		&i.FullName,
 		&i.Email,
+		&i.IsEmailVerified,
 		&i.PasswordChangetAt,
 		&i.CreatedAt,
-		&i.IsEmailVerified,
 	)
 	return i, err
 }
@@ -70,7 +72,7 @@ SET
     password_changet_at = COALESCE($4, password_changet_at),
     is_email_verified =  COALESCE($5, is_email_verified)
 WHERE username = $6
-RETURNING username, hashed_password, full_name, email, password_changet_at, created_at, is_email_verified
+RETURNING username, role, hashed_password, full_name, email, is_email_verified, password_changet_at, created_at
 `
 
 type UpdateUserParams struct {
@@ -94,12 +96,13 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 	var i User
 	err := row.Scan(
 		&i.Username,
+		&i.Role,
 		&i.HashedPassword,
 		&i.FullName,
 		&i.Email,
+		&i.IsEmailVerified,
 		&i.PasswordChangetAt,
 		&i.CreatedAt,
-		&i.IsEmailVerified,
 	)
 	return i, err
 }

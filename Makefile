@@ -42,4 +42,7 @@ evans:
 redis:
 	docker run --name redis -p 6379:6379 redis:latest
 
-.PHONY: postgres createdb createtestdb dropdb migrateup migratedown migratecreate test mockdb proto evans redis new_migration
+db_schema:
+	dbml2sql --postgres  -o doc/schema.sql doc/db.dbml
+
+.PHONY: postgres createdb createtestdb dropdb migrateup migratedown migratecreate test mockdb proto evans redis new_migration db_schema
