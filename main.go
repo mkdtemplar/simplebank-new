@@ -13,6 +13,7 @@ import (
 	_ "github.com/mkdtemplar/simplebank-new/doc/statik"
 	"github.com/mkdtemplar/simplebank-new/mail"
 	"github.com/mkdtemplar/simplebank-new/worker"
+	"github.com/rs/cors"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/sync/errgroup"
@@ -167,8 +168,15 @@ func runGatewayServer(ctx context.Context, waitGroup *errgroup.Group, config uti
 
 	mux.Handle("/swagger/", swaggerHandler)
 
+	c := cors.New(cors.Options{
+		AllowedOrigins: []string{"http://localhost:8080"},
+		AllowedMethods: []string{http.MethodGet, http.MethodPost, http.MethodDelete, http.MethodPut, http.MethodPatch},
+		AllowedHeaders: []string{"Authorization", "Content-Type", "application/json"},
+	})
+	handler := c.Handler(gapi.HttpLogger(mux))
+
 	httpServer := &http.Server{
-		Handler: gapi.HttpLogger(mux),
+		Handler: handler,
 		Addr:    config.HTTPServerAddress,
 	}
 
