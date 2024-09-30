@@ -11,6 +11,7 @@ import (
 	"github.com/mkdtemplar/simplebank-new/util"
 	"github.com/mkdtemplar/simplebank-new/validation"
 	"github.com/mkdtemplar/simplebank-new/worker"
+	"github.com/rs/zerolog/log"
 	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc/codes"
 )
@@ -34,7 +35,7 @@ func validateCreateUserRequest(req *pb.CreateUserRequest) (violations []*errdeta
 	return violations
 }
 
-func (s *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (*pb.CreateUserResponse, error) {
+func (server *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (*pb.CreateUserResponse, error) {
 	violations := validateCreateUserRequest(req)
 	if violations != nil {
 		return nil, invalidArgumentError(violations)
@@ -59,21 +60,25 @@ func (s *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (*pb
 				asynq.Queue(worker.QueueCritical),
 			}
 
-			return s.taskDistributor.DistributeTaskVerifyEmail(ctx, taskPayload, opts...)
+			return server.taskDistributor.DistributeTaskVerifyEmail(ctx, taskPayload, opts...)
 		},
 	}
 
-	txResult, err := s.store.CreateUserTx(ctx, arg)
+	log.Info().Msg(">> creating new user")
+	time.Sleep(10 * time.Second)
+
+	txResult, err := server.store.CreateUserTx(ctx, arg)
 	if err != nil {
 		if db.ErrorCode(err) == db.UniqueViolation {
 			return nil, fmt.Errorf(codes.AlreadyExists.String(), "username allready exist %v", err)
 		}
 		return nil, fmt.Errorf(codes.Internal.String(), "failed to create user %v", err)
 	}
-	
 
 	rsp := &pb.CreateUserResponse{
 		User: convertUser(txResult.User),
 	}
+
+	log.Info().Msg(">> done creating new user")
 	return rsp, nil
 }

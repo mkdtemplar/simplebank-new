@@ -25,12 +25,12 @@ func validateLoginUserRequest(req *pb.LoginUserRequest) (violations []*errdetail
 	return violations
 }
 
-func (s *Server) LoginUser(ctx context.Context, req *pb.LoginUserRequest) (*pb.LoginUserResponse, error) {
+func (server *Server) LoginUser(ctx context.Context, req *pb.LoginUserRequest) (*pb.LoginUserResponse, error) {
 	violations := validateLoginUserRequest(req)
 	if violations != nil {
 		return nil, invalidArgumentError(violations)
 	}
-	user, err := s.store.GetUser(ctx, req.GetUsername())
+	user, err := server.store.GetUser(ctx, req.GetUsername())
 	if err != nil {
 		if errors.Is(err, db.ErrRecordNotFound) {
 			return nil, fmt.Errorf(codes.NotFound.String(), "user not found %v", req.GetUsername())
@@ -42,19 +42,19 @@ func (s *Server) LoginUser(ctx context.Context, req *pb.LoginUserRequest) (*pb.L
 	if err != nil {
 		return nil, fmt.Errorf(codes.Unauthenticated.String(), "user not authenticated %v", err)
 	}
-	accessToken, accessTokenPayload, err := s.tokenMaker.CreateToken(user.Username, s.config.AccessTokenDuration)
+	accessToken, accessTokenPayload, err := server.tokenMaker.CreateToken(user.Username, user.Role, server.config.AccessTokenDuration)
 	if err != nil {
 		return nil, fmt.Errorf(codes.Internal.String(), "failed to create access token %v", err)
 	}
 
-	refreshToken, refreshPayload, err := s.tokenMaker.CreateToken(user.Username, s.config.RefreshTokenDuration)
+	refreshToken, refreshPayload, err := server.tokenMaker.CreateToken(user.Username, user.Role, server.config.RefreshTokenDuration)
 	if err != nil {
 		return nil, fmt.Errorf(codes.Internal.String(), "failed to create refresh token %v", err)
 	}
 
-	mtdt := s.extractMetadata(ctx)
+	mtdt := server.extractMetadata(ctx)
 
-	session, err := s.store.CreateSession(ctx, db.CreateSessionParams{
+	session, err := server.store.CreateSession(ctx, db.CreateSessionParams{
 		ID:           refreshPayload.ID,
 		Username:     user.Username,
 		RefreshToken: refreshToken,

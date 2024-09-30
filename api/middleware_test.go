@@ -9,6 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/mkdtemplar/simplebank-new/token"
+	"github.com/mkdtemplar/simplebank-new/util"
 	"github.com/stretchr/testify/require"
 )
 
@@ -18,9 +19,10 @@ func addAuthorization(
 	tokenMaker token.Maker,
 	authorizationType string,
 	username string,
+	role string,
 	duration time.Duration,
 ) {
-	tokenGenerate, payload, err := tokenMaker.CreateToken(username, duration)
+	tokenGenerate, payload, err := tokenMaker.CreateToken(username, role, duration)
 	require.NoError(t, err)
 	require.NotEmpty(t, payload)
 
@@ -37,7 +39,7 @@ func Test_authMiddleware(t *testing.T) {
 		{
 			name: "OK",
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, "user", time.Minute)
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, "user", util.DepositorRole, time.Minute)
 			},
 			checkResponse: func(t *testing.T, response *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, response.Code)
